@@ -1,2 +1,1 @@
-# ASD_Diagnosis_Abide
-Diagnosing Autism Spectrum Disorder using fMRI data
+# Autism_Diagnosis_ABIDE
