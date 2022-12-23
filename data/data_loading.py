@@ -36,17 +36,26 @@ def parse_arguments():
         help="different kinds of functional connectivity matrices : covariance, correlation, partial correlation, tangent, precision",
         required=False,
     )
+    parser.add_argument(
+        "--site_id",
+        type=str,
+        default="PITT",
+        help="different kinds of functional connectivity matrices : covariance, correlation, partial correlation, tangent, precision",
+        required=False,
+    )
     args = parser.parse_args()
     return args
 
 
 def load_data(
-    data_dir, output_dir, fc_matrix_kind, pipeline="cpac", quality_checked=True
+    data_dir, output_dir, fc_matrix_kind, site_id, pipeline="cpac", quality_checked=True
 ):
 
     try:  # check if feature file already exists
         # load features
-        feat_file = os.path.join(output_dir, f"ABIDE_adjacency_{fc_matrix_kind}.npz")
+        feat_file = os.path.join(
+            output_dir, f"feat_matrix_{site_id}_{fc_matrix_kind}.npz"
+        )
         ts_file = os.path.join(output_dir, "ABIDE_time_series.npy")
         label_file = os.path.join(output_dir, "Y_target.npz")
 
@@ -66,6 +75,7 @@ def load_data(
             data_dir=data_dir,
             pipeline=pipeline,
             quality_checked=quality_checked,
+            SITE_ID=site_id,
         )
 
         # make list of filenames
@@ -133,22 +143,25 @@ def load_data(
                 )
 
         np.savez_compressed(
-            os.path.join(output_dir, f"ABIDE_adjacency_{fc_matrix_kind}"),
+            os.path.join(output_dir, f"feat_matrix_{site_id}_{fc_matrix_kind}"),
             a=correlation_matrices,
             dtype=object,
         )
+
         np.save(
-            file=os.path.join(output_dir, "ABIDE_time_series.npy"),
+            file=os.path.join(output_dir, f"time_series_{site_id}.npy"),
             arr=time_series_ls,
             allow_pickle=True,
         )
+        print(f"time series size: {len(time_series_ls)}, {time_series_ls[0].shape}")
         correlation_matrices = np.array(correlation_matrices)
+        print(f"correlation matrix size: {correlation_matrices.shape}")
 
         # Get the target vector
         abide_pheno = pd.DataFrame(abide.phenotypic)
         y_target = abide_pheno["DX_GROUP"]
         y_target = y_target.apply(lambda x: x - 1)
-        np.savez_compressed(os.path.join(output_dir, "Y_target"), a=y_target)
+        np.savez_compressed(os.path.join(output_dir, f"Y_target_{site_id}"), a=y_target)
 
         return correlation_matrices, time_series_ls, y_target
 
@@ -156,7 +169,7 @@ def load_data(
 def run():
     args = parse_arguments()
     correlation_matrices, time_series_ls, y_target = load_data(
-        args.input_path, args.output_path, args.fc_matrix_kind
+        args.input_path, args.output_path, args.fc_matrix_kind, site_id=args.site_id
     )
     print(f"correlation_matrices shape: {correlation_matrices.shape}")
     print(f"time_series_ls len: {len(time_series_ls)}")

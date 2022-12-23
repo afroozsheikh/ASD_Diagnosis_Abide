@@ -1,0 +1,46 @@
+python .\data\data_loading.py `
+--input_path "C:\ABIDE_pcp\cpac\nofilt_noglobal" `
+--output_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output" `
+--fc_matrix_kind "tangent" `
+--site_id "PITT" 
+
+==============================
+
+python .\data\data_preparation.py `
+--adj_path "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\UCLA\ABIDE_adjacency_correlation.npz" `
+--time_series_path "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\UCLA\ABIDE_time_series.npy" `
+--y_path "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\UCLA\Y_target.npz" `
+--output_path "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Output\UCLA" `
+--adj_mat_type "binary_threshold" `
+--threshold 0.1 `
+
+==============================
+
+python .\scripts\train_GraphSAGE.py `
+--features_path "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Output\UCLA\features_correlation_binary_threshold_0.1_None_UCLA_5" `
+--results "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Output" `
+--batch_size 8 `
+--epochs 100 `
+--lr 0.002 `
+--patience 20 `
+--last_activation "softmax" `
+--dropout_rate 0.12 `
+--use_cv "True" `
+--weights_path "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Output\model_weights_GATv2.pt"
+=================================================
+
+
+python .\scripts\train_GATv2.py `
+--features_path "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Output\UCLA\features_correlation_binary_threshold_0.1_None_UCLA_5" `
+--results "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Output" `
+--batch_size 8 `
+--epochs 100 `
+--lr 0.005 `
+--patience 12 `
+--last_activation "softmax" `
+--dropout_rate 0.1 `
+--weights_path "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\UCLA\Best result\model_weights_GATv2.pt"
+--dropout_rate 0.1 `
+
+--use_cv "True" `
+
