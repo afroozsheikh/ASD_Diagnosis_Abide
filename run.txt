@@ -1,18 +1,19 @@
 python .\data\data_loading.py `
---input_path "C:\ABIDE_pcp\cpac\nofilt_noglobal" `
---output_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output" `
+--input_path "C:\Users\Afrooz Sheikholeslam" `
+--output_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU" `
 --fc_matrix_kind "tangent" `
---site_id "PITT" 
+--site_id "NYU" 
 
 ==============================
 
 python .\data\data_preparation.py `
---adj_path "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\UCLA\ABIDE_adjacency_correlation.npz" `
---time_series_path "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\UCLA\ABIDE_time_series.npy" `
---y_path "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\UCLA\Y_target.npz" `
---output_path "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Output\UCLA" `
+--adj_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU\feat_matrix_NYU_tangent.npz" `
+--time_series_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU\time_series_NYU.npy" `
+--y_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU\Y_target_NYU.npz" `
+--output_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU" `
 --adj_mat_type "binary_threshold" `
---threshold 0.1 `
+--threshold 0.15 `
+--data_scaler_type "Standard"
 
 ==============================
 
@@ -31,8 +32,8 @@ python .\scripts\train_GraphSAGE.py `
 
 
 python .\scripts\train_GATv2.py `
---features_path "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Output\UCLA\features_correlation_binary_threshold_0.1_None_UCLA_5" `
---results "C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Output" `
+--features_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU\features_tangent_binary_threshold_0.12_Standard" `
+--results "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU" `
 --batch_size 8 `
 --epochs 100 `
 --lr 0.005 `

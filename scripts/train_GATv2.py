@@ -173,7 +173,7 @@ def main(args):
 
     model = GATv2(
         input_feat_dim=next(iter(train_loader)).x.shape[1],
-        conv_shapes=[(5, 8), (8, 16), (16, 16), (16, 16), (16, 32)],
+        conv_shapes=[(5, 8), (8, 16), (16, 16), (16, 32)],
         cls_shapes=[16, 8],
         heads=args.heads,
         dropout_rate=args.dropout_rate,
