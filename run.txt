@@ -32,7 +32,7 @@ python .\scripts\train_GraphSAGE.py `
 
 
 python .\scripts\train_GATv2.py `
---features_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU\features_tangent_binary_threshold_0.12_Standard" `
+--features_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU\features_tangent_binary_threshold_0.13_Standard_augmented" `
 --results "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU" `
 --batch_size 8 `
 --epochs 100 `

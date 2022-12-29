@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "justMyCode": true,
+            "console": "integratedTerminal",
+            "args": [
+                "--features_path",
+                "C:\\Users\\Afrooz Sheikholeslam\\Education\\9th semester\\Project 2\\Output\\NYU\\features_tangent_binary_threshold_0.13_Standard",
+                "--gmixup",
+                "True"
+            ]
+        }
+    ]
+}
