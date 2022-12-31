@@ -338,19 +338,19 @@ def main(args):
     dataset = prepare_dataset_x(dataset, args)
 
     for i in range(11):
-        print(f"num_features: {dataset[0].x.shape}")
+        print(f"num_features: {dataset[i].x.shape}")
 
     num_features = dataset[0].x.shape[1]
     num_classes = dataset[0].y.shape[0]
 
-    train_dataset = dataset[:train_nums]
-    random.shuffle(train_dataset)
-    val_dataset = dataset[train_nums:train_val_nums]
-    test_dataset = dataset[train_val_nums:]
+    # train_dataset = dataset[:train_nums]
+    # random.shuffle(train_dataset)
+    # val_dataset = dataset[train_nums:train_val_nums]
+    # test_dataset = dataset[train_val_nums:]
 
-    logger.info(f"train_dataset size: {len(train_dataset)}")
-    logger.info(f"val_dataset size: {len(val_dataset)}")
-    logger.info(f"test_dataset size: {len(test_dataset)}")
+    # logger.info(f"train_dataset size: {len(train_dataset)}")
+    # logger.info(f"val_dataset size: {len(val_dataset)}")
+    # logger.info(f"test_dataset size: {len(test_dataset)}")
 
     # train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     # val_loader = DataLoader(val_dataset, batch_size=batch_size)

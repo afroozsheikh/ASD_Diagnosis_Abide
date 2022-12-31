@@ -227,7 +227,7 @@ def two_graphons_mixup(two_graphons, la=0.5, num_sample=20):
         pyg_graph = Data()
         pyg_graph.y = sample_graph_label
         pyg_graph.edge_index = edge_index
-        pyg_graph.num_nodes = num_nodes
+        # pyg_graph.num_nodes = num_nodes ## we do not need num_nodes
         sample_graphs.append(pyg_graph)
 
         # print(edge_index)
@@ -265,7 +265,7 @@ def two_x_graphons_mixup(two_x_graphons, la=0.5, num_sample=20):
         pyg_graph.y = sample_graph_label
         pyg_graph.x = sample_graph_x
         pyg_graph.edge_index = edge_index
-        pyg_graph.num_nodes = num_nodes
+        # pyg_graph.num_nodes = num_nodes
         sample_graphs.append(pyg_graph)
 
         # print(edge_index)
@@ -315,7 +315,7 @@ def graphon_mixup(dataset, la=0.5, num_sample=20):
         pyg_graph = Data()
         pyg_graph.y = sample_graph_label
         pyg_graph.edge_index = edge_index
-        pyg_graph.num_nodes = num_nodes
+        # pyg_graph.num_nodes = num_nodes
 
         sample_graphs.append(pyg_graph)
         # print(edge_index)
