@@ -6,19 +6,29 @@ import os
 import os.path as osp
 import numpy as np
 import time
+import pandas as pd
+import random
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
+# ------------------------------
+import networkx as nx
+from networkx.algorithms.centrality import betweenness_centrality
+from networkx.algorithms.cluster import clustering
+
+# ------------------------------
 import torch
 import torch.nn.functional as F
-
 from torch_geometric.data import DataLoader
 from torch_geometric.utils import degree
 from torch.autograd import Variable
-
-import random
 from torch.optim.lr_scheduler import StepLR
 
+# ------------------------------
 from utils.utils_aug import stat_graph, split_class_graphs, align_graphs
 from utils.utils_aug import two_graphons_mixup, universal_svd
 from graphon_estimator import universal_svd
+
+# ------------------------------
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -36,15 +46,18 @@ def parse_arguments():
         help="Path to the features file",
         required=True,
     )
-    # parser.add_argument('--epoch', type=int, default=800)
-    # parser.add_argument('--batch_size', type=int, default=32)
-    # parser.add_argument('--lr', type=float, default=0.01)
-    # parser.add_argument('--num_hidden', type=int, default=64)
+    parser.add_argument(
+        "--scaler_type",
+        type=str,
+        default=None,
+        choices=("MinMax", "Standard"),
+        help="Method used for scaling the data. options: ['MinMax', 'Standard']",
+        required=False,
+    )
     parser.add_argument("--gmixup", type=str, default="False")
     parser.add_argument("--lam_range", type=str, default="[0.005, 0.01]")
     parser.add_argument("--aug_ratio", type=float, default=0.15)
     parser.add_argument("--aug_num", type=int, default=10)
-    # parser.add_argument('--gnn', type=str, default="gin")
     parser.add_argument("--seed", type=int, default=1314)
     parser.add_argument("--log_screen", type=str, default="False")
     parser.add_argument("--ge", type=str, default="MC")
@@ -52,27 +65,72 @@ def parse_arguments():
     return args
 
 
-def prepare_dataset_x(dataset):
+def prepare_dataset_x(dataset, args):
     if dataset[0].x is None:
-        max_degree = 0
-        degs = []
-        for data in dataset:
-            degs += [degree(data.edge_index[0], dtype=torch.long)]
-            max_degree = max(max_degree, degs[-1].max().item())
-            data.num_nodes = int(torch.max(data.edge_index)) + 1
+        ##############################################################
+        for data in dataset[: args.aug_num]:
+            G = nx.Graph()
+            G.add_edges_from(data.edge_index.t().numpy())
+            if nx.is_connected(G):
+                features = pd.DataFrame(
+                    {
+                        "degree": dict(G.degree(weight="weight")).values(),
+                        "betweenness": dict(
+                            betweenness_centrality(G, weight="weight")
+                        ).values(),
+                        "eccentricity": dict(nx.eccentricity(G)).values(),
+                    }
+                )
+            else:
+                eccentricity = {}
+                components = sorted(nx.connected_components(G), key=len, reverse=True)
+                for comp in components:
+                    G_sub = G.subgraph(comp)
+                    for node in comp:
+                        eccentricity[node] = nx.eccentricity(G_sub, v=node)
+                features = pd.DataFrame(
+                    {
+                        "degree": dict(G.degree(weight="weight")).values(),
+                        "betweenness": dict(
+                            betweenness_centrality(G, weight="weight")
+                        ).values(),
+                        "eccentricity": eccentricity.values(),
+                    }
+                )
 
-        if max_degree < 2000:
-            # dataset.transform = T.OneHotDegree(max_degree)
+            # scale the data (optional)
+            if args.scaler_type in ["MinMax", "Standard"]:
+                if args.scaler_type == "MinMax":
+                    scaler = MinMaxScaler()
+                    features = scaler.fit_transform(features)
+                else:
+                    scaler = StandardScaler()
+                    features = scaler.fit_transform(features)
 
-            for data in dataset:
-                degs = degree(data.edge_index[0], dtype=torch.long)
-                data.x = F.one_hot(degs, num_classes=max_degree + 1).to(torch.float)
-        else:
-            deg = torch.cat(degs, dim=0).to(torch.float)
-            mean, std = deg.mean().item(), deg.std().item()
-            for data in dataset:
-                degs = degree(data.edge_index[0], dtype=torch.long)
-                data.x = ((degs - mean) / std).view(-1, 1)
+                X = torch.from_numpy(features)
+            else:
+                X = torch.tensor(features.values)
+            data.x = X
+        ##############################################################
+        # max_degree = 0
+        # degs = []
+        # for data in dataset:
+        #     degs += [degree(data.edge_index[0], dtype=torch.long)]
+        #     max_degree = max(max_degree, degs[-1].max().item())
+        #     data.num_nodes = int(torch.max(data.edge_index)) + 1
+
+        # if max_degree < 2000:
+        #     # dataset.transform = T.OneHotDegree(max_degree)
+
+        #     for data in dataset:
+        #         degs = degree(data.edge_index[0], dtype=torch.long)
+        #         data.x = F.one_hot(degs, num_classes=max_degree + 1).to(torch.float)
+        # else:
+        #     deg = torch.cat(degs, dim=0).to(torch.float)
+        #     mean, std = deg.mean().item(), deg.std().item()
+        #     for data in dataset:
+        #         degs = degree(data.edge_index[0], dtype=torch.long)
+        #         data.x = ((degs - mean) / std).view(-1, 1)
     return dataset
 
 
@@ -277,12 +335,10 @@ def main(args):
         train_nums = train_nums + len(new_graph)
         train_val_nums = train_val_nums + len(new_graph)
 
-    dataset = prepare_dataset_x(dataset)
+    dataset = prepare_dataset_x(dataset, args)
 
-    logger.info(f"num_features: {dataset[0].x.shape}")
-    logger.info(f"num_classes: {dataset[0].y.shape}")
-    print(f"num_features: {dataset[0].x.shape}")
-    print(f"num_classes: {dataset[0].y.shape}")
+    for i in range(11):
+        print(f"num_features: {dataset[0].x.shape}")
 
     num_features = dataset[0].x.shape[1]
     num_classes = dataset[0].y.shape[0]
