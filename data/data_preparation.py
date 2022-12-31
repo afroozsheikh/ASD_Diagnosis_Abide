@@ -109,7 +109,7 @@ def data_preparation(
     idx2 = adj_path.rfind(".")
     fc_matrix_kind = adj_path[idx1:idx2]
     filename = (
-        f"features_{fc_matrix_kind}_{adj_mat_type}_{str(threshold)}_{scaler_type}"
+        f"features_{fc_matrix_kind}_{adj_mat_type}_{str(threshold)}_{scaler_type}_3"
     )
     min_edge = 10000
     try:  # check if feature file already exists
@@ -135,8 +135,8 @@ def data_preparation(
                         "eccentricity",
                         # "ts_mean",
                         # "ts_variance",
-                        "ts_skewness",
-                        "ts_kurtosis",
+                        # "ts_skewness",
+                        # "ts_kurtosis",
                     ],
                 )
                 normal_dfs.append(df)
@@ -149,8 +149,8 @@ def data_preparation(
                         "eccentricity",
                         # "ts_mean",
                         # "ts_variance",
-                        "ts_skewness",
-                        "ts_kurtosis",
+                        # "ts_skewness",
+                        # "ts_kurtosis",
                     ],
                 )
                 ASD_dfs.append(df)
@@ -207,8 +207,8 @@ def data_preparation(
                         "eccentricity": dict(nx.eccentricity(G)).values(),
                         # "ts_mean": time_series_ls[i].mean(axis=0),
                         # "ts_variance": time_series_ls[i].var(axis=0),
-                        "ts_skewness": skew(time_series_ls[i], axis=0),
-                        "ts_kurtosis": kurtosis(time_series_ls[i], axis=0),
+                        # "ts_skewness": skew(time_series_ls[i], axis=0),
+                        # "ts_kurtosis": kurtosis(time_series_ls[i], axis=0),
                     }
                 )
             else:
@@ -228,8 +228,8 @@ def data_preparation(
                         "eccentricity": eccentricity.values(),
                         # "ts_mean": time_series_ls[i].mean(axis=0),
                         # "ts_variance": time_series_ls[i].var(axis=0),
-                        "ts_skewness": skew(time_series_ls[i], axis=0),
-                        "ts_kurtosis": kurtosis(time_series_ls[i], axis=0),
+                        # "ts_skewness": skew(time_series_ls[i], axis=0),
+                        # "ts_kurtosis": kurtosis(time_series_ls[i], axis=0),
                     }
                 )
 
@@ -262,8 +262,8 @@ def data_preparation(
                         "eccentricity",
                         # "ts_mean",
                         # "ts_variance",
-                        "ts_skewness",
-                        "ts_kurtosis",
+                        # "ts_skewness",
+                        # "ts_kurtosis",
                     ],
                 )
                 normal_dfs.append(df)
@@ -276,8 +276,8 @@ def data_preparation(
                         "eccentricity",
                         # "ts_mean",
                         # "ts_variance",
-                        "ts_skewness",
-                        "ts_kurtosis",
+                        # "ts_skewness",
+                        # "ts_kurtosis",
                     ],
                 )
                 ASD_dfs.append(df)

@@ -1,3 +1,10 @@
+python .\data\gmixup.py `
+--features_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU\features_tangent_binary_threshold_0.14_Standard_3" `
+--gmixup "True" `
+--scaler_type "Standard" `
+--aug_num 20
+
+==============================
 python .\data\data_loading.py `
 --input_path "C:\Users\Afrooz Sheikholeslam" `
 --output_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU" `
@@ -12,7 +19,7 @@ python .\data\data_preparation.py `
 --y_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU\Y_target_NYU.npz" `
 --output_path "C:\Users\Afrooz Sheikholeslam\Education\9th semester\Project 2\Output\NYU" `
 --adj_mat_type "binary_threshold" `
---threshold 0.15 `
+--threshold 0.14 `
 --data_scaler_type "Standard"
 
 ==============================
