@@ -8,11 +8,27 @@
             "program": "${file}",
             "justMyCode": true,
             "console": "integratedTerminal",
+            // "args": [
+            //     "--features_path",
+            //     "C:\\Users\\Afrooz Sheikholeslam\\Education\\9th semester\\Project 2\\Output\\NYU\\features_tangent_binary_threshold_0.13_Standard",
+            //     "--gmixup",
+            //     "True"
+            // ]
             "args": [
                 "--features_path",
-                "C:\\Users\\Afrooz Sheikholeslam\\Education\\9th semester\\Project 2\\Output\\NYU\\features_tangent_binary_threshold_0.13_Standard",
-                "--gmixup",
-                "True"
+                "C:\\Users\\Afrooz Sheikholeslam\\Education\\9th semester\\Project 2\\Output\\NYU\\features_tangent_binary_threshold_0.135_Standard_3_augmented",
+                "--results",
+                "C:\\Users\\Afrooz Sheikholeslam\\Education\\9th semester\\Project 2\\Output\\NYU",
+                "--batch_size",
+                "8",
+                "--epochs",
+                "100",
+                "--lr",
+                "0.005",
+                "--patience",
+                "12",
+                "--last_activation",
+                "softmax"
             ]
         }
     ]

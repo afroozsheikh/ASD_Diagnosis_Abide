@@ -90,6 +90,19 @@ def parse_arguments():
     return args
 
 
+def mixup_cross_entropy_loss(input, target, size_average=True):
+    """Origin: https://github.com/moskomule/mixup.pytorch
+    in PyTorch's cross entropy, targets are expected to be labels
+    so to predict probabilities this loss is needed
+    suppose q is the target and p is the input
+    loss(p, q) = -\sum_i q_i \log p_i
+    """
+    assert input.size() == target.size()
+    assert isinstance(input, Variable) and isinstance(target, Variable)
+    loss = -torch.sum(input * target)
+    return loss / input.size()[0] if size_average else loss
+
+
 def train(model, device, batch, optimizer, loss_fn):
 
     model.train()
