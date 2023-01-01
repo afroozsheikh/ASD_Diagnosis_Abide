@@ -117,19 +117,9 @@ def train(model, device, batch, optimizer, loss_fn, args):
     optimizer.zero_grad()
     logits = model(batch)
     if args.is_augmented == "True":  ## softmax should be used
-        for data in batch:
-            print("data.y", data.y)
-        # data = data.to(device)
-        # optimizer.zero_grad()
-        # output = model(data.x, data.edge_index, data.batch)
-    #     y = data.y.view(-1, num_classes)
-    #     loss = mixup_cross_entropy_loss(output, y)
-    #     loss.backward()
-    #     loss_all += loss.item() * data.num_graphs
-    #     graph_all += data.num_graphs
-    #     optimizer.step()
-    # loss = loss_all / graph_all
-    # return model, loss
+        num_classes = 2
+        y = batch.y.view(-1, num_classes)
+        loss = mixup_cross_entropy_loss(logits, y)
 
     else:
         if model.last_activation == "sigmoid":
@@ -235,12 +225,6 @@ def main(args):
     best_val_loss = 1000
     best_metrics = {}
     trigger_times = 0
-
-    # batch = next(iter(train_loader))
-    # for epoch in range(1, 1 + args.epochs):
-
-    #     loss = train(model, device, batch, optimizer, loss_fn)
-    #     print(f"Loss: {loss:.4f}")
 
     for epoch in range(1, 1 + args.epochs):
         loop = tqdm(enumerate(train_loader), total=len(train_loader))
