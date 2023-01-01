@@ -1,12 +1,14 @@
 import argparse
+import pickle
 import os
 from tqdm import tqdm
-import torch
 import pandas as pd
-from torch_geometric.loader import DataLoader
 from sklearn.model_selection import train_test_split
-import pickle
+
+import torch
+from torch_geometric.loader import DataLoader
 import torchinfo
+from torch.autograd import Variable
 
 from models.GATv2 import GATv2
 from data.data_preparation import data_preparation
@@ -117,8 +119,7 @@ def train(model, device, batch, optimizer, loss_fn, args):
     optimizer.zero_grad()
     logits = model(batch)
     if args.is_augmented == "True":  ## softmax should be used
-        num_classes = 2
-        y = batch.y.view(-1, num_classes)
+        y = batch.y.view(-1, model.num_class)
         loss = mixup_cross_entropy_loss(logits, y)
 
     else:
@@ -133,7 +134,7 @@ def train(model, device, batch, optimizer, loss_fn, args):
     return loss.item()
 
 
-def eval_batch(model, device, batch):
+def eval_batch(model, device, batch, args):
 
     model.eval()
     batch = batch.to(device)
@@ -142,6 +143,10 @@ def eval_batch(model, device, batch):
         logits = model(batch)
 
     y_true = batch.y.detach().cpu()
+    if args.is_augmented == "True":
+        num_classes = 2
+        y_true = batch.y.view(-1, model.num_class)
+
     if model.last_activation == "sigmoid":
         logits = logits.squeeze().detach().cpu()
     else:
