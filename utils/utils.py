@@ -7,7 +7,7 @@ import itertools
 import numpy as np
 
 
-def get_metrics(logits, y_true, last_activation):
+def get_metrics(logits, y_true, last_activation, args):
 
     if last_activation == "sigmoid":
         y_pred = torch.sigmoid(logits)
@@ -15,6 +15,8 @@ def get_metrics(logits, y_true, last_activation):
     else:
         y_pred = torch.softmax(logits, dim=-1)
         y_pred = torch.argmax(y_pred, dim=-1)
+        if args.is_augmented == "True":
+            y_true = torch.argmax(y_true, dim=-1)
 
     metrics_dict = {}
 

@@ -144,7 +144,6 @@ def eval_batch(model, device, batch, args):
 
     y_true = batch.y.detach().cpu()
     if args.is_augmented == "True":
-        num_classes = 2
         y_true = batch.y.view(-1, model.num_class)
 
     if model.last_activation == "sigmoid":
@@ -155,7 +154,7 @@ def eval_batch(model, device, batch, args):
     return logits, y_true
 
 
-def eval(model, device, dataloader, loss_fn):
+def eval(model, device, dataloader, loss_fn, args):
 
     model.eval()
     y_true = []
@@ -166,7 +165,19 @@ def eval(model, device, dataloader, loss_fn):
         batch = batch.to(device)
         with torch.no_grad():
             logits = model(batch)
-            y_true.append(batch.y.detach().cpu())
+            if args.is_augmented == "True":
+                correct = 0
+                total = 0
+                loss = 0
+                pred = logits.max(dim=1)[1]
+                y_true = data.y.view(-1, num_classes)
+                loss += mixup_cross_entropy_loss(output, y).item() * data.num_graphs
+                y = y.max(dim=1)[1]
+                correct += pred.eq(y).sum().item()
+                total += data.num_graphs
+
+            else:
+                y_true.append(batch.y.detach().cpu())
 
             if model.last_activation == "sigmoid":
                 logits = logits.squeeze().detach().cpu()
@@ -237,8 +248,10 @@ def main(args):
 
             loss = train(model, device, batch, optimizer, loss_fn, args)
 
-            logits, y_true = eval_batch(model, device, batch)
-            train_metrics_batch = get_metrics(logits, y_true, args.last_activation)
+            logits, y_true = eval_batch(model, device, batch, args)
+            train_metrics_batch = get_metrics(
+                logits, y_true, args.last_activation, args
+            )
 
             loop.set_description(f"Epoch: {epoch:02d}/{args.epochs:02d}")
             loop.set_postfix_str(
@@ -247,8 +260,12 @@ def main(args):
                 f"Accuracy: {100 * train_metrics_batch['acc']:.2f}%"
             )
 
-        loss, train_logits, train_y_true = eval(model, device, train_loader, loss_fn)
-        train_metrics = get_metrics(train_logits, train_y_true, args.last_activation)
+        loss, train_logits, train_y_true = eval(
+            model, device, train_loader, loss_fn, args
+        )
+        train_metrics = get_metrics(
+            train_logits, train_y_true, args.last_activation, args
+        )
 
         val_loss, val_logits, val_y_true = eval(model, device, val_loader, loss_fn)
         val_metrics = get_metrics(val_logits, val_y_true, args.last_activation)
