@@ -16,7 +16,8 @@ def get_metrics(logits, y_true, last_activation, args):
         y_pred = torch.softmax(logits, dim=-1)
         y_pred = torch.argmax(y_pred, dim=-1)
         if args.is_augmented == "True":
-            y_true = torch.argmax(y_true, dim=-1)
+            y_true = torch.argmax(y_true, dim=-1).cpu().numpy()
+            y_pred = y_pred.cpu().numpy()
 
     metrics_dict = {}
 

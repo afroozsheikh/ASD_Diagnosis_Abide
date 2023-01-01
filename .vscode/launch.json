@@ -28,7 +28,9 @@
                 "--patience",
                 "12",
                 "--last_activation",
-                "softmax"
+                "softmax",
+                "--is_augmented",
+                "True"
             ]
         }
     ]

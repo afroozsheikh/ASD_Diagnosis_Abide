@@ -155,46 +155,41 @@ def eval_batch(model, device, batch, args):
 
 
 def eval(model, device, dataloader, loss_fn, args):
-
-    model.eval()
-    y_true = []
     alllogits = []
-
-    for batch in dataloader:
-
-        batch = batch.to(device)
-        with torch.no_grad():
+    y_true = []
+    model.eval()
+    if args.is_augmented == "True":
+        val_loss = 0
+        for batch in dataloader:
+            batch = batch.to(device)
             logits = model(batch)
-            if args.is_augmented == "True":
-                correct = 0
-                total = 0
-                loss = 0
-                pred = logits.max(dim=1)[1]
-                y_true = data.y.view(-1, num_classes)
-                loss += mixup_cross_entropy_loss(output, y).item() * data.num_graphs
-                y = y.max(dim=1)[1]
-                correct += pred.eq(y).sum().item()
-                total += data.num_graphs
-
-            else:
+            alllogits.append(logits)
+            y = batch.y.view(-1, model.num_class)
+            y_true.append(y)
+            val_loss += mixup_cross_entropy_loss(logits, y).item() * batch.num_graphs
+        y_true = torch.cat(y_true, dim=0).long()
+    else:
+        for batch in dataloader:
+            batch = batch.to(device)
+            with torch.no_grad():
+                logits = model(batch)
                 y_true.append(batch.y.detach().cpu())
 
-            if model.last_activation == "sigmoid":
-                logits = logits.squeeze().detach().cpu()
-            else:
-                logits = logits.detach().cpu()
-            alllogits.append(logits)
+                if model.last_activation == "sigmoid":
+                    logits = logits.squeeze().detach().cpu()
+                else:
+                    logits = logits.detach().cpu()
+                alllogits.append(logits)
+        if model.last_activation == "sigmoid":
+            y_true = torch.cat(y_true, dim=0).float()
+        else:
+            y_true = torch.cat(y_true, dim=0).long()
+
+        val_loss = loss_fn(alllogits, y_true).item()
+        y_true = y_true.int()
 
     alllogits = torch.cat(alllogits, dim=0)
-    if model.last_activation == "sigmoid":
-        y_true = torch.cat(y_true, dim=0).float()
-    else:
-        y_true = torch.cat(y_true, dim=0).long()
-
-    val_loss = loss_fn(alllogits, y_true)
-    y_true = y_true.int()
-
-    return val_loss.item(), alllogits, y_true
+    return val_loss, alllogits, y_true
 
 
 def main(args):
@@ -267,8 +262,10 @@ def main(args):
             train_logits, train_y_true, args.last_activation, args
         )
 
-        val_loss, val_logits, val_y_true = eval(model, device, val_loader, loss_fn)
-        val_metrics = get_metrics(val_logits, val_y_true, args.last_activation)
+        val_loss, val_logits, val_y_true = eval(
+            model, device, val_loader, loss_fn, args
+        )
+        val_metrics = get_metrics(val_logits, val_y_true, args.last_activation, args)
 
         train_losses.append(loss)
         val_losses.append(val_loss)
