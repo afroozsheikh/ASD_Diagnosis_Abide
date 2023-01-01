@@ -86,6 +86,13 @@ def parse_arguments():
         help="activation function used in the last layer. options: ['sigmoid', 'softmax']",
         required=False,
     )
+    parser.add_argument(
+        "--is_augmented",
+        type=str,
+        default="True",
+        choices=("True", "False"),
+        required=False,
+    )
     args = parser.parse_args()
     return args
 
@@ -103,16 +110,32 @@ def mixup_cross_entropy_loss(input, target, size_average=True):
     return loss / input.size()[0] if size_average else loss
 
 
-def train(model, device, batch, optimizer, loss_fn):
+def train(model, device, batch, optimizer, loss_fn, args):
 
     model.train()
     batch = batch.to(device)
     optimizer.zero_grad()
     logits = model(batch)
-    if model.last_activation == "sigmoid":
-        loss = loss_fn(logits.squeeze(), batch.y.float())
+    if args.is_augmented == "True":  ## softmax should be used
+        for data in batch:
+            print("data.y", data.y)
+        # data = data.to(device)
+        # optimizer.zero_grad()
+        # output = model(data.x, data.edge_index, data.batch)
+    #     y = data.y.view(-1, num_classes)
+    #     loss = mixup_cross_entropy_loss(output, y)
+    #     loss.backward()
+    #     loss_all += loss.item() * data.num_graphs
+    #     graph_all += data.num_graphs
+    #     optimizer.step()
+    # loss = loss_all / graph_all
+    # return model, loss
+
     else:
-        loss = loss_fn(logits, batch.y.long())
+        if model.last_activation == "sigmoid":
+            loss = loss_fn(logits.squeeze(), batch.y.float())
+        else:
+            loss = loss_fn(logits, batch.y.long())
 
     loss.backward()
     optimizer.step()
@@ -223,7 +246,7 @@ def main(args):
         loop = tqdm(enumerate(train_loader), total=len(train_loader))
         for batch_idx, batch in loop:
 
-            loss = train(model, device, batch, optimizer, loss_fn)
+            loss = train(model, device, batch, optimizer, loss_fn, args)
 
             logits, y_true = eval_batch(model, device, batch)
             train_metrics_batch = get_metrics(logits, y_true, args.last_activation)
