@@ -12,9 +12,7 @@ from tqdm import tqdm
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(
-        description="Arguments for training the Inception_v3 model"
-    )
+    parser = argparse.ArgumentParser(description="Arguments for loading ABIDE data")
     parser.add_argument(
         "--input_path",
         type=str,
@@ -41,6 +39,12 @@ def parse_arguments():
         type=str,
         default="PITT",
         help="different kinds of functional connectivity matrices : covariance, correlation, partial correlation, tangent, precision",
+        required=False,
+    )
+    parser.add_argument(
+        "--save_results",
+        type=str,
+        default="True",
         required=False,
     )
     args = parser.parse_args()
@@ -126,7 +130,7 @@ def load_data(
                 )
             correlation_matrices = correlation_measure.fit_transform(time_series_ls)
 
-        else:
+        else:  # fc_matrix_kind is covariance, correlation, partial correlation, precision
             correlation_matrices = []
             time_series_ls = []
             loop = tqdm(enumerate(fmri_filenames), total=len(fmri_filenames))
@@ -143,7 +147,9 @@ def load_data(
                 )
 
         np.savez_compressed(
-            os.path.join(output_dir, f"feat_matrix_{site_id}_{fc_matrix_kind}"),
+            os.path.join(
+                output_dir, f"correlation_matrices_{site_id}_{fc_matrix_kind}"
+            ),
             a=correlation_matrices,
             dtype=object,
         )
