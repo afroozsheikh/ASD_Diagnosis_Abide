@@ -16,14 +16,13 @@ def parse_arguments():
     parser.add_argument(
         "--input_path",
         type=str,
-        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Code\Data",
         help="Path where data should be downloaded or be loaded",
         required=True,
     )
     parser.add_argument(
         "--output_path",
         type=str,
-        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Code\Out",
+        default=r"C:\Users\Afrooz Sheikholeslam\Education\ASD - ARTICLE\Outputs\Correlation-Matrices_TS_Y",
         help="Path to the output files",
         required=True,
     )
@@ -37,14 +36,8 @@ def parse_arguments():
     parser.add_argument(
         "--site_id",
         type=str,
-        default="PITT",
-        help="different kinds of functional connectivity matrices : covariance, correlation, partial correlation, tangent, precision",
-        required=False,
-    )
-    parser.add_argument(
-        "--save_results",
-        type=str,
-        default="True",
+        default=None,
+        help="The ID of the intended site to fetch in ABIDE dataset",
         required=False,
     )
     args = parser.parse_args()
@@ -52,7 +45,12 @@ def parse_arguments():
 
 
 def load_data(
-    data_dir, output_dir, fc_matrix_kind, site_id, pipeline="cpac", quality_checked=True
+    data_dir,
+    output_dir,
+    fc_matrix_kind,
+    site_id,
+    pipeline="cpac",
+    quality_checked=True,
 ):
 
     try:  # check if feature file already exists
@@ -79,7 +77,7 @@ def load_data(
             data_dir=data_dir,
             pipeline=pipeline,
             quality_checked=quality_checked,
-            SITE_ID=site_id,
+            # SITE_ID=site_id,
         )
 
         # make list of filenames
@@ -175,7 +173,10 @@ def load_data(
 def run():
     args = parse_arguments()
     correlation_matrices, time_series_ls, y_target = load_data(
-        args.input_path, args.output_path, args.fc_matrix_kind, site_id=args.site_id
+        args.input_path,
+        args.output_path,
+        args.fc_matrix_kind,
+        site_id=args.site_id,
     )
     print(f"correlation_matrices shape: {correlation_matrices.shape}")
     print(f"time_series_ls len: {len(time_series_ls)}")
