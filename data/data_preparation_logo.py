@@ -76,14 +76,22 @@ def parse_arguments():
         help="If true, then the loops will be removed",
         required=False,
     )
+    parser.add_argument(
+        "--abide_path",
+        type=str,
+        default="True",
+        choices=("True", "False"),
+        help="If true, then the loops will be removed",
+        required=False,
+    )
 
     args = parser.parse_args()
     return args
 
 
-def get_groups():
+def get_groups(abide_path):
     abide = datasets.fetch_abide_pcp(
-        data_dir="/mnt/c/brainhackschool/project/data",
+        data_dir=abide_path,
         pipeline="cpac",
         quality_checked=True,
     )
@@ -98,7 +106,7 @@ def get_groups():
 
 
 def data_preparation(
-    input_path,
+    abide_path,
     adj_path,
     time_series_path,
     y_path,
@@ -314,7 +322,7 @@ def main():
     args = parse_arguments()
 
     normal_dfs, ASD_dfs = data_preparation(
-        input_path=args.input_path,
+        abide_path=args.abide_path,
         adj_path=args.adj_path,
         time_series_path=args.time_series_path,
         y_path=args.y_path,

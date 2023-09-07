@@ -14,7 +14,7 @@ from tqdm import tqdm
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Arguments for loading ABIDE data")
     parser.add_argument(
-        "--input_path",
+        "--abide_path",
         type=str,
         help="Path where data should be downloaded or be loaded",
         required=True,
@@ -173,7 +173,7 @@ def load_data(
 def run():
     args = parse_arguments()
     correlation_matrices, time_series_ls, y_target = load_data(
-        args.input_path,
+        args.abide_path,
         args.output_path,
         args.fc_matrix_kind,
         site_id=args.site_id,
