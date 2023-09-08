@@ -16,7 +16,7 @@ import os
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Arguments for feture extraction")
+    parser = argparse.ArgumentParser(description="Arguments for feature extraction")
     parser.add_argument(
         "--adj_path",
         type=str,
@@ -105,6 +105,41 @@ def get_groups(abide_path):
         groups.append(s.decode())  # for some reason the site names are of type 'bytes'
 
 
+def show_data_statistics(datalist):
+    normal_dfs = []
+    ASD_dfs = []
+    for subject in data_list:
+        if subject.y == 0:
+            df = pd.DataFrame(
+                data=subject.x.numpy(),
+                columns=[
+                    "degree",
+                    "betweenness",
+                    "eccentricity",
+                    "ts_mean",
+                    "ts_variance",
+                    # "ts_skewness",
+                    # "ts_kurtosis",
+                ],
+            )
+            normal_dfs.append(df)
+        else:
+            df = pd.DataFrame(
+                data=subject.x.numpy(),
+                columns=[
+                    "degree",
+                    "betweenness",
+                    "eccentricity",
+                    "ts_mean",
+                    "ts_variance",
+                    # "ts_skewness",
+                    # "ts_kurtosis",
+                ],
+            )
+            ASD_dfs.append(df)
+    return normal_dfs, ASD_dfs
+
+
 def data_preparation(
     abide_path,
     adj_path,
@@ -146,40 +181,7 @@ def data_preparation(
             data_list = pickle.load(fp)
 
         print("Feature file found.")
-
-        normal_dfs = []
-        ASD_dfs = []
-
-        for subject in data_list:
-            if subject.y == 0:
-                df = pd.DataFrame(
-                    data=subject.x.numpy(),
-                    columns=[
-                        "degree",
-                        "betweenness",
-                        "eccentricity",
-                        # "ts_mean",
-                        # "ts_variance",
-                        # "ts_skewness",
-                        # "ts_kurtosis",
-                    ],
-                )
-                normal_dfs.append(df)
-            else:
-                df = pd.DataFrame(
-                    data=subject.x.numpy(),
-                    columns=[
-                        "degree",
-                        "betweenness",
-                        "eccentricity",
-                        # "ts_mean",
-                        # "ts_variance",
-                        # "ts_skewness",
-                        # "ts_kurtosis",
-                    ],
-                )
-                ASD_dfs.append(df)
-        return normal_dfs, ASD_dfs
+        normal_dfs, ASD_dfs = show_data_statistics(datalist)
 
     except:  # if not, extract features
         print("No feature file found. Extracting features...")
@@ -214,6 +216,7 @@ def data_preparation(
 
             if loop_removal == "True":
                 np.fill_diagonal(adj_mat[i], 0)
+
             G = nx.from_numpy_matrix(adj_mat[i], create_using=nx.Graph)
             print(f"number of edges: {G.number_of_edges()}")
             if G.number_of_edges() < min_edge:
@@ -223,22 +226,7 @@ def data_preparation(
 
             ## dict(G.degree(weight="weight")).values()
             ## dict(betweenness_centrality(G, weight="weight")).values()
-            if nx.is_connected(G):
-
-                features = pd.DataFrame(
-                    {
-                        "degree": dict(G.degree(weight="weight")).values(),
-                        "betweenness": dict(
-                            betweenness_centrality(G, weight="weight")
-                        ).values(),
-                        "eccentricity": dict(nx.eccentricity(G)).values(),
-                        # "ts_mean": time_series_ls[i].mean(axis=0),
-                        # "ts_variance": time_series_ls[i].var(axis=0),
-                        # "ts_skewness": skew(time_series_ls[i], axis=0),
-                        # "ts_kurtosis": kurtosis(time_series_ls[i], axis=0),
-                    }
-                )
-            else:
+            if not nx.is_connected(G):
                 eccentricity = {}
                 components = sorted(nx.connected_components(G), key=len, reverse=True)
                 for comp in components:
@@ -246,19 +234,22 @@ def data_preparation(
                     for node in comp:
                         eccentricity[node] = nx.eccentricity(G_sub, v=node)
 
-                features = pd.DataFrame(
-                    {
-                        "degree": dict(G.degree(weight="weight")).values(),
-                        "betweenness": dict(
-                            betweenness_centrality(G, weight="weight")
-                        ).values(),
-                        "eccentricity": eccentricity.values(),
-                        # "ts_mean": time_series_ls[i].mean(axis=0),
-                        # "ts_variance": time_series_ls[i].var(axis=0),
-                        # "ts_skewness": skew(time_series_ls[i], axis=0),
-                        # "ts_kurtosis": kurtosis(time_series_ls[i], axis=0),
-                    }
-                )
+            features = pd.DataFrame(
+                {
+                    "degree": dict(G.degree(weight="weight")).values(),
+                    "betweenness": dict(
+                        betweenness_centrality(G, weight="weight")
+                    ).values(),
+                    "eccentricity": dict(nx.eccentricity(G)).values()
+                    if nx.is_connected(G) == True
+                    else eccentricity.values(),
+                    "ts_mean": time_series_ls[i].mean(axis=0),
+                    "ts_variance": time_series_ls[i].var(axis=0),
+                    # "ts_skewness": skew(time_series_ls[i], axis=0),
+                    # "ts_kurtosis": kurtosis(time_series_ls[i], axis=0),
+                }
+            )
+            normal_dfs, ASD_dfs = show_data_statistics(datalist)
 
             # scale the data (optional)
             if scaler_type in ["MinMax", "Standard"]:
@@ -276,40 +267,7 @@ def data_preparation(
             edge_index = torch.tensor(list(G.edges()))
             data_list.append(Data(x=X, edge_index=edge_index.T, y=y_target[i].item()))
 
-        normal_dfs = []
-        ASD_dfs = []
-
-        for subject in data_list:
-            if subject.y == 0:
-                df = pd.DataFrame(
-                    data=subject.x.numpy(),
-                    columns=[
-                        "degree",
-                        "betweenness",
-                        "eccentricity",
-                        # "ts_mean",
-                        # "ts_variance",
-                        # "ts_skewness",
-                        # "ts_kurtosis",
-                    ],
-                )
-                normal_dfs.append(df)
-            else:
-                df = pd.DataFrame(
-                    data=subject.x.numpy(),
-                    columns=[
-                        "degree",
-                        "betweenness",
-                        "eccentricity",
-                        # "ts_mean",
-                        # "ts_variance",
-                        # "ts_skewness",
-                        # "ts_kurtosis",
-                    ],
-                )
-                ASD_dfs.append(df)
-
-        # save features
+            # save features
         path = os.path.join(output_path, filename)
         with open(path, "wb") as fp:
             pickle.dump(data_list, fp)
