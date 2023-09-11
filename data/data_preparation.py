@@ -48,7 +48,7 @@ def parse_arguments():
     parser.add_argument(
         "--adj_mat_type",
         type=str,
-        default="weighted_threshold",
+        default="binary_threshold",
         choices=("Weighted", "weighted_threshold", "binary_threshold"),
         help="Method used for making the adjacency matrix. options: ['Weighted', 'weighted_threshold', 'binary_threshold']",
         required=False,
@@ -105,7 +105,7 @@ def get_groups(abide_path):
         groups.append(s.decode())  # for some reason the site names are of type 'bytes'
 
 
-def show_data_statistics(datalist):
+def show_data_statistics(data_list):
     normal_dfs = []
     ASD_dfs = []
     for subject in data_list:
@@ -141,7 +141,6 @@ def show_data_statistics(datalist):
 
 
 def data_preparation(
-    abide_path,
     adj_path,
     time_series_path,
     y_path,
@@ -169,8 +168,9 @@ def data_preparation(
     idx2 = adj_path.rfind(".")
     fc_matrix_kind = adj_path[idx1:idx2]
     filename = (
-        f"features_{fc_matrix_kind}_{adj_mat_type}_{str(threshold)}_{scaler_type}_3"
+        f"features_{fc_matrix_kind}_{adj_mat_type}_{str(threshold)}_{scaler_type}_5"
     )
+    print(filename)
     min_edge = 10000
     try:  # check if feature file already exists
 
@@ -181,7 +181,6 @@ def data_preparation(
             data_list = pickle.load(fp)
 
         print("Feature file found.")
-        normal_dfs, ASD_dfs = show_data_statistics(datalist)
 
     except:  # if not, extract features
         print("No feature file found. Extracting features...")
@@ -196,7 +195,6 @@ def data_preparation(
                 "adj_mat_type should be one of these: ['Weighted', 'weighted_threshold', 'binary_threshold']"
             )
         else:
-            print("binaryyy")
             if adj_mat_type == "weighted_threshold":
                 adj_mat[adj_mat <= threshold] = 0
             elif adj_mat_type == "binary_threshold":
@@ -241,7 +239,7 @@ def data_preparation(
                         betweenness_centrality(G, weight="weight")
                     ).values(),
                     "eccentricity": dict(nx.eccentricity(G)).values()
-                    if nx.is_connected(G) == True
+                    if nx.is_connected(G)
                     else eccentricity.values(),
                     "ts_mean": time_series_ls[i].mean(axis=0),
                     "ts_variance": time_series_ls[i].var(axis=0),
@@ -249,7 +247,6 @@ def data_preparation(
                     # "ts_kurtosis": kurtosis(time_series_ls[i], axis=0),
                 }
             )
-            normal_dfs, ASD_dfs = show_data_statistics(datalist)
 
             # scale the data (optional)
             if scaler_type in ["MinMax", "Standard"]:
@@ -267,20 +264,21 @@ def data_preparation(
             edge_index = torch.tensor(list(G.edges()))
             data_list.append(Data(x=X, edge_index=edge_index.T, y=y_target[i].item()))
 
-            # save features
+        # save features
         path = os.path.join(output_path, filename)
         with open(path, "wb") as fp:
             pickle.dump(data_list, fp)
         print(f"Features are successfully extracted and stored in: {path}")
         print(min_edge)
-        return normal_dfs, ASD_dfs
+
+    normal_dfs, ASD_dfs = show_data_statistics(data_list)
+    return normal_dfs, ASD_dfs
 
 
 def main():
     args = parse_arguments()
 
     normal_dfs, ASD_dfs = data_preparation(
-        abide_path=args.abide_path,
         adj_path=args.adj_path,
         time_series_path=args.time_series_path,
         y_path=args.y_path,
